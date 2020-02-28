@@ -1,0 +1,16 @@
+name: master_test
+on: 
+  push:
+    branches: 
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+    - uses: actions/checkout@master
+    - run: go get -u ./...
+    - run: sudo apt-get install -y plantuml
+    - run: go test -v
