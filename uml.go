@@ -19,8 +19,8 @@ import (
 
 // Config struct holds options for the extension.
 type Config struct {
-	languageName      string
-	defaultRenderFunc renderer.NodeRendererFunc
+	LanguageName      string
+	DefaultRenderFunc renderer.NodeRendererFunc
 }
 
 type uml struct {
@@ -45,11 +45,6 @@ func (u *uml) Extend(m goldmark.Markdown) {
 	m.Renderer().AddOptions(renderer.WithNodeRenderers(
 		util.Prioritized(NewHTMLRenderer(u.config), 0),
 	))
-}
-
-func (u *uml) GetHTMLRenderer() renderer.NodeRenderer {
-	r := &HTMLRenderer{u.config}
-	return r
 }
 
 // HTMLRenderer struct is a renderer.NodeRenderer implementation for the extension.
@@ -82,13 +77,14 @@ func (r *HTMLRenderer) renderFencedCodeBlock(w util.BufWriter, source []byte, no
 	n := node.(*ast.FencedCodeBlock)
 	language := n.Language(source)
 
-	if string(language) == r.config.languageName {
+	if string(language) == r.config.LanguageName {
 		if !entering {
 			svg, _ := gouml.UML(r.getLines(source, node))
 			w.Write(svg)
 		}
 	} else {
-		return r.config.defaultRenderFunc(w, source, node, entering)
+
+		return r.config.DefaultRenderFunc(w, source, node, entering)
 	}
 
 	return ast.WalkContinue, nil
