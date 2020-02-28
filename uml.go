@@ -30,7 +30,7 @@ type uml struct {
 // UML default uml extension when there is no other fencedCodeBlock goldmark render extensions
 var UML = NewUML("uml", html.NewRenderer())
 
-// Newuml returns a new extension with given arguments.
+// NewUML returns a new extension with given arguments.
 func NewUML(languageName string, render renderer.NodeRenderer) goldmark.Extender {
 	defaultRenderFunc := getRenderFunction(ast.KindFencedCodeBlock, render)
 	if defaultRenderFunc == nil {
@@ -41,10 +41,15 @@ func NewUML(languageName string, render renderer.NodeRenderer) goldmark.Extender
 }
 
 // Extend implements goldmark.Extender.
-func (d *uml) Extend(m goldmark.Markdown) {
+func (u *uml) Extend(m goldmark.Markdown) {
 	m.Renderer().AddOptions(renderer.WithNodeRenderers(
-		util.Prioritized(NewHTMLRenderer(d.config), 0),
+		util.Prioritized(NewHTMLRenderer(u.config), 0),
 	))
+}
+
+func (u *uml) GetHTMLRenderer() renderer.NodeRenderer {
+	r := &HTMLRenderer{u.config}
+	return r
 }
 
 // HTMLRenderer struct is a renderer.NodeRenderer implementation for the extension.
