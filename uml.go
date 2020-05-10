@@ -1,7 +1,7 @@
 // Package uml is a extension for the goldmark(http://github.com/yuin/goldmark).
 //
 // This extension adds svg picture output from uml language using
-// gouml(https://github.com/OhYee/gouml).
+// go-plantuml(https://github.com/OhYee/go-plantuml).
 package uml
 
 import (
@@ -9,36 +9,47 @@ import (
 
 	gouml "github.com/OhYee/go-plantuml"
 	ext "github.com/OhYee/goldmark-fenced_codeblock_extension"
+	fp "github.com/OhYee/goutils/functional"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/util"
 )
 
-// Default  uml extension when there is no other fencedCodeBlock goldmark render extensions
-var Default = NewUMLExtension("uml")
+// Default uml extension when there is no other fencedCodeBlock goldmark render extensions
+var Default = NewUMLExtension("plantuml")
 
-func NewUMLExtension(languageName string) goldmark.Extender {
-	return ext.NewExt([]ext.RenderMap{
-		ext.RenderMap{
-			Language:       []string{languageName},
-			RenderFunction: NewUML(languageName).Renderer,
-		},
-	}...)
+// RenderMap return the goldmark-fenced_codeblock_extension.RenderMap
+func RenderMap(languages ...string) ext.RenderMap {
+	return ext.RenderMap{
+		Languages:      languages,
+		RenderFunction: NewUML(languages).Renderer,
+	}
 }
 
+// NewUMLExtension return the goldmark.Extender
+func NewUMLExtension(languages ...string) goldmark.Extender {
+	return ext.NewExt(RenderMap(languages...))
+}
+
+// UML render struct
 type UML struct {
-	LanguageName string
+	Languages []string
 }
 
-func NewUML(languageName string) *UML {
-	return &UML{languageName}
+// NewUML initial a UML struct
+func NewUML(languages []string) *UML {
+	return &UML{languages}
 }
 
+// Renderer render function
 func (u *UML) Renderer(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
 	n := node.(*ast.FencedCodeBlock)
-	language := n.Language(source)
-	if string(language) == u.LanguageName {
+	language := string(n.Language(source))
+
+	if fp.AnyString(func(l string) bool {
+		return l == language
+	}, u.Languages) {
 		if !entering {
 			svg, _ := gouml.UML(u.getLines(source, node))
 			w.Write(svg)
