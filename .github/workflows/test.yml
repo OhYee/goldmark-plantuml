@@ -1,0 +1,16 @@
+name: test
+on:
+  push:
+    branchs:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+    - run: sudo apt-get install graphviz
+    - run: bash test
+    - run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}
