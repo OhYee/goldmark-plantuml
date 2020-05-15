@@ -23,7 +23,7 @@ var Default = NewUMLExtension("plantuml")
 func RenderMap(languages ...string) ext.RenderMap {
 	return ext.RenderMap{
 		Languages:      languages,
-		RenderFunction: NewUML(languages).Renderer,
+		RenderFunction: NewUML(languages...).Renderer,
 	}
 }
 
@@ -38,7 +38,7 @@ type UML struct {
 }
 
 // NewUML initial a UML struct
-func NewUML(languages []string) *UML {
+func NewUML(languages ...string) *UML {
 	return &UML{languages}
 }
 
