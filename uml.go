@@ -6,6 +6,7 @@ package uml
 
 import (
 	"bytes"
+	"crypto/sha1"
 
 	gouml "github.com/OhYee/go-plantuml"
 	ext "github.com/OhYee/goldmark-fenced_codeblock_extension"
@@ -17,29 +18,31 @@ import (
 )
 
 // Default uml extension when there is no other fencedCodeBlock goldmark render extensions
-var Default = NewUMLExtension("plantuml")
+var Default = NewUMLExtension(50, "plantuml")
 
 // RenderMap return the goldmark-fenced_codeblock_extension.RenderMap
-func RenderMap(languages ...string) ext.RenderMap {
+func RenderMap(length int, languages ...string) ext.RenderMap {
 	return ext.RenderMap{
 		Languages:      languages,
-		RenderFunction: NewUML(languages...).Renderer,
+		RenderFunction: NewUML(length, languages...).Renderer,
 	}
 }
 
 // NewUMLExtension return the goldmark.Extender
-func NewUMLExtension(languages ...string) goldmark.Extender {
-	return ext.NewExt(RenderMap(languages...))
+func NewUMLExtension(length int, languages ...string) goldmark.Extender {
+	return ext.NewExt(RenderMap(length, languages...))
 }
 
 // UML render struct
 type UML struct {
 	Languages []string
+	buf       map[string][]byte
+	MaxLength int
 }
 
 // NewUML initial a UML struct
-func NewUML(languages ...string) *UML {
-	return &UML{languages}
+func NewUML(length int, languages ...string) *UML {
+	return &UML{Languages: languages, buf: make(map[string][]byte), MaxLength: length}
 }
 
 // Renderer render function
@@ -51,8 +54,20 @@ func (u *UML) Renderer(w util.BufWriter, source []byte, node ast.Node, entering 
 		return l == language
 	}, u.Languages) {
 		if !entering {
-			svg, _ := gouml.UML(u.getLines(source, node))
-			w.Write(svg)
+			raw := u.getLines(source, node)
+			h := sha1.New()
+			h.Write(raw)
+			hash := string(h.Sum([]byte{}))
+			if result, exist := u.buf[hash]; exist {
+				w.Write(result)
+			} else {
+				svg, _ := gouml.UML(raw)
+				if len(u.buf) >= u.MaxLength {
+					u.buf = make(map[string][]byte)
+				}
+				u.buf[hash] = svg
+				w.Write(svg)
+			}
 		}
 	}
 	return ast.WalkContinue, nil
