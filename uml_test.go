@@ -44,6 +44,8 @@ func main(){}
 		t.Errorf("got %s, excepted %s\n", buf.Bytes(), want)
 	}
 
+	buf.Reset()
+
 	if err := md.Convert(source, &buf); err != nil {
 		t.Error(err)
 	}
