@@ -22,7 +22,7 @@ func main() {
 		goldmark.WithExtensions(
 			extension.GFM,
 			ext.NewExt(
-				uml.RenderMap("plantuml-svg"),
+				uml.RenderMap(50, "plantuml-svg"),
 				ext.RenderMap{
 					Languages:      []string{"*"},
 					RenderFunction: ext.GetFencedCodeBlockRendererFunc(highlighting.NewHTMLRenderer()),

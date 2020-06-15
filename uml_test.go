@@ -43,6 +43,13 @@ func main(){}
 	if bytes.Compare(buf.Bytes(), []byte(want)) != 0 {
 		t.Errorf("got %s, excepted %s\n", buf.Bytes(), want)
 	}
+
+	if err := md.Convert(source, &buf); err != nil {
+		t.Error(err)
+	}
+	if bytes.Compare(buf.Bytes(), []byte(want)) != 0 {
+		t.Errorf("got %s, excepted %s\n", buf.Bytes(), want)
+	}
 }
 
 func Test_demo(t *testing.T) {
