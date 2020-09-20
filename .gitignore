@@ -12,3 +12,5 @@
 *.out
 
 coverage.txt
+
+output.html
